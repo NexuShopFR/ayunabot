@@ -51,7 +51,7 @@ module.exports = {
       description: `Vous avez été **${cmd}** du serveur **${message.guild.name}**.
 
 Raison: ${reason}`,
-      image: 'https://i.imgur.com/f9Wf9dK.png',
+      image: 'https://auto.creavite.co/api/out/DHwodsxyi3Vbsy7gn8_standard.gif',
       footer: 'Support: discord.gg/nexushop'
     });
 

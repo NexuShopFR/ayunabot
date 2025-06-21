@@ -1,5 +1,5 @@
 module.exports = (message, targetUser) => {
-  const staffRoleId = '1385727718192320663';
+  const staffRoleId = process.env.STAFF_ROLE_ID;
 
   const authorIsStaff = message.member.roles.cache.has(staffRoleId);
   const targetIsStaff = targetUser.roles.cache.has(staffRoleId);
