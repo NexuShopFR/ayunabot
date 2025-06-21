@@ -7,18 +7,26 @@ const {
   ButtonStyle
 } = require('discord.js');
 
+const {
+  STAFF_ROLE_ID,
+  SELLER_ROLE_ID,
+  TICKET_LOG_CHANNEL_ID
+} = process.env;
+
 module.exports = async (interaction) => {
   const choice = interaction.values[0];
+
   if (choice === 'cancel') {
-    return interaction.reply({ content: 'Action cancelled.', ephemeral: true });
+    return interaction.reply({ content: '❌ Action annulée.', ephemeral: true });
   }
 
   const ticketName = `ticket-${interaction.user.username.toLowerCase()}`;
   const existing = interaction.guild.channels.cache.find(c => c.name === ticketName);
-  if (existing) return interaction.reply({ content: 'You already have an open ticket.', ephemeral: true });
+  if (existing) {
+    return interaction.reply({ content: '🟠 Vous avez déjà un ticket ouvert.', ephemeral: true });
+  }
 
   const categoryMap = {
-    owner: 'Ticket Owner',
     partner: 'Ticket Partner',
     buy: 'Ticket Buy',
     support: 'Ticket Support'
@@ -32,36 +40,46 @@ module.exports = async (interaction) => {
     });
   }
 
-  const roleMention = {
-    owner: '@Owner',
-    partner: '@Staff',
-    buy: '@Seller',
-    support: '@Support'
-  };
+  // 👮 Permissions
+  const permissionOverwrites = [
+    {
+      id: interaction.guild.id,
+      deny: [PermissionsBitField.Flags.ViewChannel]
+    },
+    {
+      id: interaction.user.id,
+      allow: [
+        PermissionsBitField.Flags.ViewChannel,
+        PermissionsBitField.Flags.SendMessages,
+        PermissionsBitField.Flags.ReadMessageHistory
+      ]
+    }
+  ];
 
+  if (choice === 'partner' || choice === 'support') {
+    permissionOverwrites.push({
+      id: STAFF_ROLE_ID,
+      allow: [PermissionsBitField.Flags.ViewChannel]
+    });
+  } else if (choice === 'buy') {
+    permissionOverwrites.push({
+      id: SELLER_ROLE_ID,
+      allow: [PermissionsBitField.Flags.ViewChannel]
+    });
+  }
+
+  // 📦 Créer le salon
   const channel = await interaction.guild.channels.create({
     name: ticketName,
     type: ChannelType.GuildText,
     parent: category.id,
-    permissionOverwrites: [
-      {
-        id: interaction.guild.id,
-        deny: [PermissionsBitField.Flags.ViewChannel]
-      },
-      {
-        id: interaction.user.id,
-        allow: [
-          PermissionsBitField.Flags.ViewChannel,
-          PermissionsBitField.Flags.SendMessages,
-          PermissionsBitField.Flags.ReadMessageHistory
-        ]
-      }
-    ]
+    permissionOverwrites: permissionOverwrites
   });
 
+  // 📩 Message dans le ticket
   const embed = new EmbedBuilder()
-    .setTitle("🎫 Ticket Created")
-    .setDescription(`Thank you ${interaction.user}, our team will respond shortly.`)
+    .setTitle("🎫 Ticket Ouvert")
+    .setDescription(`Merci ${interaction.user}, un membre de notre équipe vous répondra bientôt.`)
     .setColor("Green");
 
   const buttons = new ActionRowBuilder().addComponents(
@@ -75,11 +93,28 @@ module.exports = async (interaction) => {
       .setStyle(ButtonStyle.Danger)
   );
 
+  // 🔔 Mentionner les bons rôles
+  const mention = choice === 'buy'
+    ? `<@&${SELLER_ROLE_ID}>`
+    : `<@&${STAFF_ROLE_ID}>`;
+
   await channel.send({
-    content: `${roleMention[choice]}`,
+    content: mention,
     embeds: [embed],
     components: [buttons]
   });
 
-  interaction.reply({ content: `Your ticket has been opened: ${channel}`, ephemeral: true });
+  await interaction.reply({ content: `🎫 Votre ticket a été ouvert ici : ${channel}`, ephemeral: true });
+
+  // 🧾 Log dans le salon de logs des tickets
+  const logChannel = interaction.guild.channels.cache.get(TICKET_LOG_CHANNEL_ID);
+  if (logChannel) {
+    const logEmbed = new EmbedBuilder()
+      .setTitle("📥 Nouveau Ticket Ouvert")
+      .setDescription(`**Salon** : ${channel}\n**Utilisateur** : ${interaction.user.tag} (${interaction.user.id})\n**Type** : ${choice}`)
+      .setColor("Blue")
+      .setTimestamp();
+
+    logChannel.send({ embeds: [logEmbed] });
+  }
 };

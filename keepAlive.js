@@ -2,9 +2,7 @@ const express = require('express');
 const app = express();
 const path = require('path');
 
-// Sert un vrai fichier HTML
 app.use(express.static('public'));
-
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
