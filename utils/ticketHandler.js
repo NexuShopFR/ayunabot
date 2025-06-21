@@ -9,7 +9,6 @@ const {
 
 const {
   STAFF_ROLE_ID,
-  SELLER_ROLE_ID,
   TICKET_LOG_CHANNEL_ID
 } = process.env;
 
@@ -29,10 +28,13 @@ module.exports = async (interaction) => {
   const categoryMap = {
     partner: 'Ticket Partner',
     buy: 'Ticket Buy',
-    support: 'Ticket Support'
+    support: 'Ticket Support',
+    owner: 'Ticket Owner'
   };
 
-  let category = interaction.guild.channels.cache.find(c => c.name === categoryMap[choice] && c.type === ChannelType.GuildCategory);
+  let category = interaction.guild.channels.cache.find(
+    c => c.name === categoryMap[choice] && c.type === ChannelType.GuildCategory
+  );
   if (!category) {
     category = await interaction.guild.channels.create({
       name: categoryMap[choice],
@@ -56,14 +58,14 @@ module.exports = async (interaction) => {
     }
   ];
 
-  if (choice === 'partner' || choice === 'support') {
+  if (choice === 'owner') {
     permissionOverwrites.push({
-      id: STAFF_ROLE_ID,
+      id: interaction.guild.ownerId,
       allow: [PermissionsBitField.Flags.ViewChannel]
     });
-  } else if (choice === 'buy') {
+  } else {
     permissionOverwrites.push({
-      id: SELLER_ROLE_ID,
+      id: STAFF_ROLE_ID,
       allow: [PermissionsBitField.Flags.ViewChannel]
     });
   }
@@ -73,7 +75,7 @@ module.exports = async (interaction) => {
     name: ticketName,
     type: ChannelType.GuildText,
     parent: category.id,
-    permissionOverwrites: permissionOverwrites
+    permissionOverwrites
   });
 
   // 📩 Message dans le ticket
@@ -93,10 +95,7 @@ module.exports = async (interaction) => {
       .setStyle(ButtonStyle.Danger)
   );
 
-  // 🔔 Mentionner les bons rôles
-  const mention = choice === 'buy'
-    ? `<@&${SELLER_ROLE_ID}>`
-    : `<@&${STAFF_ROLE_ID}>`;
+  const mention = `<@&${STAFF_ROLE_ID}>`;
 
   await channel.send({
     content: mention,
@@ -106,7 +105,7 @@ module.exports = async (interaction) => {
 
   await interaction.reply({ content: `🎫 Votre ticket a été ouvert ici : ${channel}`, ephemeral: true });
 
-  // 🧾 Log dans le salon de logs des tickets
+  // 🧾 Log dans le salon des logs des tickets
   const logChannel = interaction.guild.channels.cache.get(TICKET_LOG_CHANNEL_ID);
   if (logChannel) {
     const logEmbed = new EmbedBuilder()
