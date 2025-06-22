@@ -1,31 +1,35 @@
-require('dotenv').config();
 const { EmbedBuilder } = require('discord.js');
-
-const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID;
 
 module.exports = {
   name: 'help',
   async execute(message) {
-    if (!message.member.roles.cache.has(STAFF_ROLE_ID)) return message.reply('❌ Commande réservée au staff.');
+    const embed = new EmbedBuilder()
+      .setTitle('📚 Commandes disponibles')
+      .setColor('#ffffff')
+      .setDescription([
+        '**🎟️ Tickets**',
+        '`+setup-ticket` - Configuration du système de tickets',
+        '`+rename <nom>` - Renommer un ticket',
+        '`+close` - Fermer un ticket',
+        '',
+        '**🔨 Modération**',
+        '`+warn @user <raison>` - Avertir un membre',
+        '`+unwarn @user` - Retirer un avertissement',
+        '`+warns @user` - Voir les avertissements',
+        '`+kick @user <raison>` - Expulser un membre',
+        '`+ban @user <raison>` - Bannir un membre',
+        '`+mute @user <durée>` - Rendre muet temporairement',
+        '`+unmute @user` - Enlever le mute',
+        '`+clear <nombre>` - Supprimer des messages',
+        '',
+        '**👑 Owner uniquement**',
+        '`+embed <texte>` - Envoyer un embed personnalisé',
+        '`+say <texte>` - Faire parler le bot',
+        '',
+        '**📊 Divers**',
+        '`+invite @user` - Voir les invitations d’un membre',
+      ].join('\n'));
 
-    const helpEmbed = new EmbedBuilder()
-      .setTitle('📜 Commandes Modération')
-      .setDescription(`
-• +ban @user [raison] → Bannir un membre
-• +kick @user [raison] → Expulser un membre
-• +mute @user durée [raison] → Mute temporaire
-• +unmute @user → Enlever le mute
-• +warn @user [raison] → Ajouter un avertissement
-• +unwarn @user → Enlever le dernier avertissement
-• +warns [@user] → Voir les warns d’un membre
-• +clear <nombre> → Supprimer X messages
-• +setup-ticket → Initialiser les tickets (propriétaire uniquement)
-• +help → Voir ce message
-      `)
-      .setColor('Blue')
-      .setFooter({ text: 'Support: discord.gg/nexushop' });
-
-    await message.channel.send({ embeds: [helpEmbed] });
-    await message.delete().catch(() => {});
+    message.channel.send({ embeds: [embed] });
   }
 };
