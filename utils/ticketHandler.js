@@ -15,23 +15,27 @@ const {
 module.exports = async (interaction) => {
   const choice = interaction.values[0];
   if (choice === 'cancel') {
-    return interaction.reply({ content: '❌ Action annulée.', ephemeral: true });
+    return interaction.reply({ content: '❌ Ticket annulé.', ephemeral: true });
   }
 
-  const ticketName = `ticket-${interaction.user.username.toLowerCase()}`;
-  const existing = interaction.guild.channels.cache.find(c => c.name === ticketName);
+  const username = interaction.user.username.toLowerCase().replace(/[^a-z0-9\-]/g, '');
+  const existing = interaction.guild.channels.cache.find(c => c.name === username);
   if (existing) {
-    return interaction.reply({ content: '🟠 Vous avez déjà un ticket ouvert.', ephemeral: true });
+    return interaction.reply({ content: '⚠️ Vous avez déjà un ticket ouvert.', ephemeral: true });
   }
 
   const categoryMap = {
     partner: 'Ticket Partner',
     buy: 'Ticket Buy',
     support: 'Ticket Support',
-    owner: 'Ticket Owner'
+    owner: 'Ticket Owner',
+    reward: 'Reward Invites'
   };
 
-  let category = interaction.guild.channels.cache.find(c => c.name === categoryMap[choice] && c.type === ChannelType.GuildCategory);
+  let category = interaction.guild.channels.cache.find(
+    c => c.name === categoryMap[choice] && c.type === ChannelType.GuildCategory
+  );
+
   if (!category) {
     category = await interaction.guild.channels.create({
       name: categoryMap[choice],
@@ -39,7 +43,6 @@ module.exports = async (interaction) => {
     });
   }
 
-  // Permissions du ticket
   const permissionOverwrites = [
     {
       id: interaction.guild.id,
@@ -59,9 +62,8 @@ module.exports = async (interaction) => {
     }
   ];
 
-  // Cas spécial OWNER → seul owner
   if (choice === 'owner') {
-    permissionOverwrites.splice(2, 1); // remove staff access
+    permissionOverwrites.splice(2, 1);
     permissionOverwrites.push({
       id: interaction.guild.ownerId,
       allow: [PermissionsBitField.Flags.ViewChannel]
@@ -69,15 +71,15 @@ module.exports = async (interaction) => {
   }
 
   const channel = await interaction.guild.channels.create({
-    name: ticketName,
+    name: username,
     type: ChannelType.GuildText,
     parent: category.id,
     permissionOverwrites
   });
 
   const embed = new EmbedBuilder()
-    .setTitle("🎫 Ticket Ouvert")
-    .setDescription(`Merci ${interaction.user}, un membre de notre équipe vous répondra bientôt.`)
+    .setTitle("📨 Ticket Ouvert")
+    .setDescription(`Bonjour ${interaction.user}, un membre de l’équipe vous répondra bientôt.`)
     .setColor("Green");
 
   const buttons = new ActionRowBuilder().addComponents(
@@ -102,10 +104,11 @@ module.exports = async (interaction) => {
   const logChannel = interaction.guild.channels.cache.get(TICKET_LOG_CHANNEL_ID);
   if (logChannel) {
     const logEmbed = new EmbedBuilder()
-      .setTitle("📥 Nouveau Ticket")
-      .setDescription(`**Salon**: ${channel}\n**Utilisateur**: ${interaction.user.tag}\n**Type**: ${choice}`)
+      .setTitle("🧾 Nouveau Ticket")
+      .setDescription(`**Salon** : ${channel}\n**Utilisateur** : ${interaction.user.tag}\n**Type** : ${choice}`)
       .setColor("Blue")
       .setTimestamp();
-    logChannel.send({ embeds: [logEmbed] });
+
+    await logChannel.send({ embeds: [logEmbed] });
   }
 };
