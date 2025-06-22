@@ -10,17 +10,13 @@ module.exports = {
     const isStaff = message.member.roles.cache.has(STAFF_ROLE_ID);
     const channel = message.channel;
 
-    // Vérifie que c’est bien un salon de ticket
     if (!channel.name.startsWith('ticket-')) return;
 
-    // Vérifie que la personne est staff ou proprio du ticket
-    const ticketOwner = channel.name.replace('ticket-', '');
-    const isTicketOwner = message.author.username.toLowerCase() === ticketOwner;
-    if (!isStaff && !isTicketOwner) return;
+    if (!isStaff) return;
 
     const newName = args.join('-').toLowerCase().replace(/[^a-z0-9\-]/g, '');
     if (!newName || newName.length < 3) {
-      return message.channel.send('❌ Nom invalide. Exemple : `+rename livraison-pb`');
+      return message.channel.send('❌ Nom invalide. Exemple : `+rename livraison`');
     }
 
     try {

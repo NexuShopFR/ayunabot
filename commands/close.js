@@ -1,4 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
+require('dotenv').config();
 
 module.exports = {
   name: 'close',
@@ -9,10 +10,7 @@ module.exports = {
     const TICKET_LOG_CHANNEL_ID = process.env.TICKET_LOG_CHANNEL_ID;
 
     const isStaff = message.member.roles.cache.has(STAFF_ROLE_ID);
-    const ticketOwner = message.channel.name.replace('ticket-', '');
-    const isTicketOwner = ticketOwner === message.author.username.toLowerCase();
-
-    if (!isStaff && !isTicketOwner) return;
+    if (!isStaff) return;
 
     const embed = new EmbedBuilder()
       .setTitle('🎟️ Ticket Fermé')
@@ -23,11 +21,9 @@ module.exports = {
     const logChannel = message.guild.channels.cache.get(TICKET_LOG_CHANNEL_ID);
     if (logChannel) logChannel.send({ embeds: [embed] });
 
-    await message.reply('✅ Fermeture dans 3 secondes...');
+    await message.channel.send('✅ Fermeture dans 3 secondes...');
     setTimeout(() => {
       message.channel.delete().catch(() => {});
     }, 3000);
-
-    await message.delete().catch(() => {});
   }
 };
