@@ -31,15 +31,21 @@ const client = new Client({
   partials: [Partials.Channel, Partials.Message, Partials.Reaction]
 });
 
+// 📂 Commandes préfixées
 client.commands = new Collection();
 const commandFiles = fs.readdirSync('./commands').filter(f => f.endsWith('.js'));
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
-  client.commands.set(command.name, command);
+  if (command?.name && typeof command.execute === 'function') {
+    client.commands.set(command.name, command);
+    console.log(`✅ Commande chargée : ${command.name}`);
+  } else {
+    console.warn(`⚠️ Mauvais format de commande : ${file}`);
+  }
 }
 
 client.once('ready', () => {
-  console.log(`✅ Connecté en tant que ${client.user.tag}`);
+  console.log(`🟢 Connecté en tant que ${client.user.tag}`);
   client.user.setPresence({
     activities: [{ name: 'NexuShop', type: 3 }],
     status: 'dnd'
@@ -63,7 +69,7 @@ client.on('guildMemberAdd', async member => {
   welcomeEmbed(member);
 });
 
-// 💬 Commandes classiques +close / +rename + modération
+// 💬 Gestion des messages
 client.on('messageCreate', async message => {
   if (message.author.bot || !message.guild) return;
 
@@ -77,22 +83,26 @@ client.on('messageCreate', async message => {
   const isStaff = message.member.roles.cache.has(STAFF_ROLE_ID);
   const ticketLogChannel = message.guild.channels.cache.get(TICKET_LOG_CHANNEL_ID);
 
+  // 🛠️ Commandes préfixées
   if (cmd.startsWith('+')) {
     const commandName = cmd.slice(1);
     const command = client.commands.get(commandName);
-    if (command) {
-      try {
-        await command.execute(message, args);
-      } catch (err) {
-        console.error(err);
-        const errorMsg = await message.reply('❌ Une erreur est survenue pendant l’exécution.');
-        setTimeout(() => errorMsg.delete().catch(() => {}), 5000);
-      }
+    if (!command) {
+      console.warn(`❓ Commande inconnue : ${commandName}`);
+      return;
+    }
+
+    try {
+      await command.execute(message, args);
+    } catch (err) {
+      console.error(`❌ Erreur dans la commande ${commandName} :`, err);
+      const errorMsg = await message.reply('❌ Une erreur est survenue pendant l’exécution.');
+      setTimeout(() => errorMsg.delete().catch(() => {}), 5000);
     }
     return;
   }
 
-  // Tickets : commandes textuelles dans salon
+  // 🎫 Commandes dans les salons de ticket
   if (!message.channel.name?.startsWith('ticket-')) return;
   const ticketOwner = message.channel.name.replace('ticket-', '');
   const isTicketOwner = ticketOwner === message.author.username.toLowerCase();
@@ -104,6 +114,7 @@ client.on('messageCreate', async message => {
       .setDescription(`Le ticket **${message.channel.name}** a été fermé par ${message.author}`)
       .setColor('Red')
       .setTimestamp();
+
     if (ticketLogChannel) ticketLogChannel.send({ embeds: [embed] });
     await message.channel.send('✅ Fermeture dans 3 secondes...');
     return setTimeout(() => message.channel.delete().catch(() => {}), 3000);
@@ -173,7 +184,7 @@ client.on('guildMemberRemove', async member => {
   if (channel) channel.send({ embeds: [embed] });
 });
 
-// 🧪 Interactions (debug)
+// 🔘 Menu tickets et boutons
 const ticketHandler = require('./utils/ticketHandler');
 const buttonHandler = require('./utils/buttonHandler');
 
