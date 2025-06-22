@@ -1,30 +1,32 @@
 const { EmbedBuilder } = require('discord.js');
+require('dotenv').config();
 
 module.exports = {
   name: 'rename',
   async execute(message, args) {
-    if (!message.channel.name?.startsWith('ticket-')) return;
-
     const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID;
     const TICKET_LOG_CHANNEL_ID = process.env.TICKET_LOG_CHANNEL_ID;
 
     const isStaff = message.member.roles.cache.has(STAFF_ROLE_ID);
-    const ticketOwner = message.channel.name.replace('ticket-', '');
-    const isTicketOwner = ticketOwner === message.author.username.toLowerCase();
+    const channel = message.channel;
 
+    // Vérifie que c’est bien un salon de ticket
+    if (!channel.name.startsWith('ticket-')) return;
+
+    // Vérifie que la personne est staff ou proprio du ticket
+    const ticketOwner = channel.name.replace('ticket-', '');
+    const isTicketOwner = message.author.username.toLowerCase() === ticketOwner;
     if (!isStaff && !isTicketOwner) return;
 
     const newName = args.join('-').toLowerCase().replace(/[^a-z0-9\-]/g, '');
     if (!newName || newName.length < 3) {
-      const reply = await message.reply('❌ Nom invalide. Exemple : `+rename livraison`');
-      await message.delete().catch(() => {});
-      return;
+      return message.channel.send('❌ Nom invalide. Exemple : `+rename livraison-pb`');
     }
 
     try {
-      await message.channel.setName(newName);
+      await channel.setName(newName);
 
-      const confirm = await message.reply(`✅ Salon renommé : \`${newName}\``);
+      const confirm = await message.channel.send(`✅ Le salon a été renommé en \`${newName}\``);
 
       const embed = new EmbedBuilder()
         .setTitle('✏️ Ticket renommé')
@@ -35,14 +37,9 @@ module.exports = {
       const logChannel = message.guild.channels.cache.get(TICKET_LOG_CHANNEL_ID);
       if (logChannel) logChannel.send({ embeds: [embed] });
 
-      setTimeout(() => {
-        confirm.delete().catch(() => {});
-      }, 3000);
+      setTimeout(() => confirm.delete().catch(() => {}), 3000);
     } catch (err) {
-      console.error(err);
-      await message.reply('❌ Impossible de renommer ce salon.');
+      console.error('Erreur lors du renommage du ticket :', err);
     }
-
-    await message.delete().catch(() => {});
   }
 };
