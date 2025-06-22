@@ -1,6 +1,7 @@
+require('dotenv').config();
 const { STAFF_ROLE_ID } = process.env;
 
-const inviteRegex = /(discord\.gg\/|discordapp\.com\/invite\/|invite\.gg\/)/i;
+const inviteRegex = /(discord\.gg\/|discord(app)?\.com\/invite\/|invite\.gg\/|discord\.com\/invite\/)/i;
 
 module.exports = async (message) => {
   if (!message.guild || message.author.bot) return;
@@ -10,7 +11,7 @@ module.exports = async (message) => {
 
   if (inviteRegex.test(message.content)) {
     try {
-      // 🔥 Supprimer tous les messages récents de l’utilisateur contenant un lien
+      // 🔥 Supprimer les messages récents avec liens d'invitation
       const messages = await message.channel.messages.fetch({ limit: 20 });
       const userMessages = messages.filter(
         m => m.author.id === message.author.id && inviteRegex.test(m.content)
@@ -18,17 +19,15 @@ module.exports = async (message) => {
 
       await message.channel.bulkDelete(userMessages, true);
 
-      // ⚠️ Message d’avertissement
       const warnMsg = await message.channel.send(`🚫 ${message.author}, la publicité est interdite. Nouvelle tentative = sanction.`);
       setTimeout(() => warnMsg.delete().catch(() => {}), 5000);
 
-      // 🔔 Optionnel : DM à l’utilisateur
       try {
         await message.author.send(`🚫 Vous avez été averti pour publicité sur **${message.guild.name}**.\n\nLes invitations Discord sont interdites.`);
       } catch {}
-      
+
     } catch (err) {
-      console.error('Erreur anti pub:', err);
+      console.error('Erreur anti pub :', err);
     }
   }
 };

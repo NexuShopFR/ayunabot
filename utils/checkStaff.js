@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 module.exports = (message, targetUser) => {
   const staffRoleId = process.env.STAFF_ROLE_ID;
 
@@ -5,12 +7,12 @@ module.exports = (message, targetUser) => {
   const targetIsStaff = targetUser.roles.cache.has(staffRoleId);
 
   if (!authorIsStaff) {
-    message.reply("❌ You do not have permission to use this command.");
+    message.reply("❌ Vous n'avez pas la permission d'utiliser cette commande.");
     return false;
   }
 
   if (targetIsStaff) {
-    message.reply("❌ You cannot use this command on another staff member.");
+    message.reply("❌ Vous ne pouvez pas utiliser cette commande sur un autre membre du staff.");
     return false;
   }
 

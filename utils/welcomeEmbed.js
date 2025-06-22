@@ -9,7 +9,7 @@ module.exports = async (member) => {
       .setTitle('Welcome to NexuShop')
       .setDescription(`Hello ${member}, welcome to **NexuShop**!`)
       .setColor('#ffffff')
-      .setImage("https://auto.creavite.co/api/out/DHwodsxyi3Vbsy7gn8_standard.gif")
+      .setImage("https://auto.creavite.co/api/out/Yojdi6y2Kbbnsy9trz_standard .gif")
       .setTimestamp();
 
     channel.send({ embeds: [embed] });

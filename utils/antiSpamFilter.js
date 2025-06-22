@@ -1,10 +1,10 @@
+require('dotenv').config();
 const { Collection } = require('discord.js');
 const { STAFF_ROLE_ID } = process.env;
 
-// Paramètres anti-spam
-const spamLimit = 5;       // nombre de messages max
-const interval = 7000;     // durée en ms (7s)
-const warnCooldown = 15000; // délai avant un nouveau warn possible
+const spamLimit = 5;
+const interval = 7000;
+const warnCooldown = 15000;
 
 const userMessages = new Collection();
 const lastWarned = new Collection();
@@ -17,30 +17,25 @@ module.exports = async (message) => {
 
   const now = Date.now();
   const userId = message.author.id;
-  const channel = message.channel;
 
-  // Ajoute le message à l’historique
-  if (!userMessages.has(userId)) {
-    userMessages.set(userId, []);
-  }
+  if (!userMessages.has(userId)) userMessages.set(userId, []);
   const timestamps = userMessages.get(userId);
   timestamps.push(now);
 
-  // Garde uniquement les messages récents (dans l'intervalle)
+  // Nettoyage des anciens messages
   const recent = timestamps.filter(ts => now - ts < interval);
   userMessages.set(userId, recent);
 
   if (recent.length >= spamLimit) {
-    if (lastWarned.get(userId) && now - lastWarned.get(userId) < warnCooldown) return;
-
+    if (lastWarned.has(userId) && now - lastWarned.get(userId) < warnCooldown) return;
     lastWarned.set(userId, now);
 
     try {
-      const messages = await channel.messages.fetch({ limit: 30 });
+      const messages = await message.channel.messages.fetch({ limit: 30 });
       const userMsgs = messages.filter(m => m.author.id === userId);
-      await channel.bulkDelete(userMsgs, true);
+      await message.channel.bulkDelete(userMsgs, true);
 
-      const warnMsg = await channel.send(`⚠️ ${message.author}, merci d'éviter le spam.`);
+      const warnMsg = await message.channel.send(`⚠️ ${message.author}, merci d'éviter le spam.`);
       setTimeout(() => warnMsg.delete().catch(() => {}), 4000);
 
       try {

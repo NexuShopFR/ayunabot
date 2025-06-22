@@ -1,0 +1,28 @@
+require('dotenv').config(); // ← AJOUTER ÇA
+const { EmbedBuilder } = require('discord.js');
+const { STAFF_ROLE_ID, MODERATION_LOG_CHANNEL_ID } = process.env;
+
+module.exports = {
+  name: 'kick',
+  async execute(message, args) {
+    const target = message.mentions.members.first();
+    const reason = args.slice(1).join(' ') || 'Aucune raison fournie';
+    if (!message.member.roles.cache.has(STAFF_ROLE_ID)) return message.reply('❌ Staff uniquement.');
+    if (!target) return message.reply('❌ Mentionne un utilisateur.');
+    if (target.roles.cache.has(STAFF_ROLE_ID)) return message.reply('❌ Impossible sur un autre staff.');
+
+    const embed = new EmbedBuilder()
+      .setTitle('🥾 Expulsé')
+      .setDescription(`${target} a été expulsé par ${message.author}
+Raison: ${reason}`)
+      .setColor('#ffffff')
+      .setImage('https://auto.creavite.co/api/out/Yojdi6y2Kbbnsy9trz_standard.gif')
+      .setFooter({ text: 'discord.gg/nexushop' });
+
+    await target.send({ embeds: [embed] }).catch(() => {});
+    await target.kick(reason);
+    const logChannel = message.guild.channels.cache.get(MODERATION_LOG_CHANNEL_ID);
+    if (logChannel) logChannel.send({ embeds: [embed] });
+    await message.delete().catch(() => {});
+  }
+};

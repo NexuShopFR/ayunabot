@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { EmbedBuilder, ChannelType } = require('discord.js');
 const { LOG_CHANNEL_ID } = process.env;
 
@@ -8,11 +9,10 @@ module.exports = async (interaction) => {
   const user = interaction.user;
 
   if (interaction.customId === 'claim-ticket') {
-    await interaction.reply({
+    return interaction.reply({
       content: `🎟️ Ticket claim par ${user}.`,
       ephemeral: false
     });
-    return;
   }
 
   if (interaction.customId === 'close-ticket') {

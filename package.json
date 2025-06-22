@@ -1,8 +1,10 @@
 {
   "name": "nexushop-bot",
   "version": "1.0.0",
+  "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -10,13 +12,12 @@
     "url": "git+https://github.com/NexuShopFR/NexuShop.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Airi",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/NexuShopFR/NexuShop/issues"
   },
   "homepage": "https://github.com/NexuShopFR/NexuShop#readme",
-  "description": "",
   "dependencies": {
     "discord.js": "^14.20.0",
     "dotenv": "^16.5.0",

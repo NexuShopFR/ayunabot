@@ -1,3 +1,4 @@
+require('dotenv').config();
 const {
   EmbedBuilder,
   ActionRowBuilder,
@@ -19,7 +20,7 @@ module.exports = async (client) => {
     .setTitle("🎫 NexuShop Ticket System")
     .setDescription("**Sélectionne un type de ticket ci-dessous.**\nTout abus sera sanctionné.")
     .setColor("White")
-    .setImage("https://auto.creavite.co/api/out/DHwodsxyi3Vbsy7gn8_standard.gif");
+    .setImage("https://auto.creavite.co/api/out/Yojdi6y2Kbbnsy9trz_standard.gif");
 
   const select = new StringSelectMenuBuilder()
     .setCustomId('ticket-select')

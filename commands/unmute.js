@@ -1,0 +1,42 @@
+require('dotenv').config();
+const { EmbedBuilder } = require('discord.js');
+
+const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID;
+const MODERATION_LOG_CHANNEL_ID = process.env.MODERATION_LOG_CHANNEL_ID;
+
+module.exports = {
+  name: 'unmute',
+  async execute(message) {
+    const target = message.mentions.members.first();
+    if (!message.member.roles.cache.has(STAFF_ROLE_ID)) return message.reply('❌ Commande réservée au staff.');
+    if (!target) return message.reply('❌ Utilisateur non mentionné.');
+    if (target.roles.cache.has(STAFF_ROLE_ID)) return message.reply('❌ Impossible d’agir sur un autre staff.');
+
+    const embed = new EmbedBuilder()
+      .setTitle('🔊 Unmute Notification')
+      .setDescription(`Vous avez été **unmute** du serveur **${message.guild.name}**.`)
+      .setImage('https://auto.creavite.co/api/out/DHwodsxyi3Vbsy7gn8_standard.gif')
+      .setFooter({ text: 'Support: discord.gg/nexushop' })
+      .setColor('#ffffff');
+
+    try {
+      await target.user.send({ embeds: [embed] });
+    } catch {}
+
+    try {
+      await target.timeout(null);
+    } catch (e) {
+      return message.reply('❌ Erreur lors du unmute.').then(m => setTimeout(() => m.delete().catch(() => {}), 5000));
+    }
+
+    const logEmbed = new EmbedBuilder()
+      .setTitle('✅ UNMUTE Effectué')
+      .setDescription(`${target} a été unmute par ${message.author}`)
+      .setColor('Orange');
+
+    const logChannel = message.guild.channels.cache.get(MODERATION_LOG_CHANNEL_ID);
+    if (logChannel) await logChannel.send({ embeds: [logEmbed] });
+
+    await message.delete().catch(() => {});
+  }
+};

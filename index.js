@@ -8,9 +8,7 @@ const {
   Collection,
   EmbedBuilder
 } = require('discord.js');
-
 const fs = require('fs');
-const path = require('path');
 const antiAdFilter = require('./utils/antiAdFilter');
 const antiSpamFilter = require('./utils/antiSpamFilter');
 
@@ -34,15 +32,14 @@ const client = new Client({
 });
 
 client.commands = new Collection();
-
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+const commandFiles = fs.readdirSync('./commands').filter(f => f.endsWith('.js'));
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
   client.commands.set(command.name, command);
 }
 
 client.once('ready', () => {
-  console.log(`✅ Logged in as ${client.user.tag}`);
+  console.log(`✅ Connecté en tant que ${client.user.tag}`);
   client.user.setPresence({
     activities: [{ name: 'NexuShop', type: 3 }],
     status: 'dnd'
@@ -52,14 +49,13 @@ client.once('ready', () => {
   sendTicketMenu(client);
 });
 
+// 🎉 Bienvenue + anti-alt
 const welcomeEmbed = require('./utils/welcomeEmbed');
 client.on('guildMemberAdd', async member => {
-  const accountAge = Date.now() - member.user.createdTimestamp;
-  const ageLimit = 1000 * 60 * 60 * 3; // 3 heures
-
-  if (accountAge < ageLimit) {
+  const ageLimit = 1000 * 60 * 60 * 3;
+  if (Date.now() - member.user.createdTimestamp < ageLimit) {
     try {
-      await member.send(`🚫 Votre compte est trop récent pour rejoindre **${member.guild.name}**. Réessayez plus tard.`);
+      await member.send(`🚫 Votre compte est trop récent pour rejoindre **${member.guild.name}**.`);
     } catch {}
     return await member.kick('Compte trop récent (anti-alt)');
   }
@@ -67,56 +63,7 @@ client.on('guildMemberAdd', async member => {
   welcomeEmbed(member);
 });
 
-const ticketHandler = require('./utils/ticketHandler');
-client.on('interactionCreate', i => {
-  if (i.isStringSelectMenu()) ticketHandler(i);
-});
-
-const buttonHandler = require('./utils/buttonHandler');
-client.on('interactionCreate', i => {
-  if (i.isButton()) buttonHandler(i);
-});
-
-client.on('messageDelete', async message => {
-  if (!message.guild || message.author?.bot) return;
-  const channel = message.guild.channels.cache.get(MODERATION_LOG_CHANNEL_ID);
-  if (!channel) return;
-  const embed = new EmbedBuilder()
-    .setTitle('🗑️ Message supprimé')
-    .setDescription(`**Auteur :** ${message.author}\n**Salon :** ${message.channel}\n**Contenu :** ${message.content || 'Aucun contenu'}`)
-    .setColor('Orange')
-    .setTimestamp();
-  channel.send({ embeds: [embed] });
-});
-
-client.on('messageUpdate', async (oldMsg, newMsg) => {
-  if (!newMsg.guild || newMsg.author?.bot) return;
-  if (oldMsg.content === newMsg.content) return;
-  const channel = newMsg.guild.channels.cache.get(MODERATION_LOG_CHANNEL_ID);
-  if (!channel) return;
-  const embed = new EmbedBuilder()
-    .setTitle('✏️ Message modifié')
-    .setDescription(`**Auteur :** ${newMsg.author}\n**Salon :** ${newMsg.channel}`)
-    .addFields(
-      { name: 'Avant', value: oldMsg.content || 'Vide' },
-      { name: 'Après', value: newMsg.content || 'Vide' }
-    )
-    .setColor('Yellow')
-    .setTimestamp();
-  channel.send({ embeds: [embed] });
-});
-
-client.on('guildMemberRemove', async member => {
-  const channel = member.guild.channels.cache.get(MODERATION_LOG_CHANNEL_ID);
-  if (!channel) return;
-  const embed = new EmbedBuilder()
-    .setTitle('📤 Départ membre')
-    .setDescription(`${member.user.tag} a quitté le serveur.`)
-    .setColor('Red')
-    .setTimestamp();
-  channel.send({ embeds: [embed] });
-});
-
+// 💬 Commandes classiques +close / +rename + modération
 client.on('messageCreate', async message => {
   if (message.author.bot || !message.guild) return;
 
@@ -124,30 +71,28 @@ client.on('messageCreate', async message => {
   antiSpamFilter(message);
 
   const content = message.content.trim();
-  const args = content.split(/ +/);
+  const args = content.split(/\s+/);
   const cmd = args.shift().toLowerCase();
 
   const isStaff = message.member.roles.cache.has(STAFF_ROLE_ID);
   const ticketLogChannel = message.guild.channels.cache.get(TICKET_LOG_CHANNEL_ID);
 
-  if (content.startsWith('+')) {
+  if (cmd.startsWith('+')) {
     const commandName = cmd.slice(1);
     const command = client.commands.get(commandName);
     if (command) {
       try {
         await command.execute(message, args);
-        const sent = await message.channel.send(`✅ Commande **+${commandName}** exécutée.`);
-        setTimeout(() => sent.delete().catch(() => {}), 5000);
-        await message.delete().catch(() => {});
       } catch (err) {
         console.error(err);
-        const errMsg = await message.reply('❌ Une erreur est survenue lors de l’exécution de la commande.');
-        setTimeout(() => errMsg.delete().catch(() => {}), 5000);
+        const errorMsg = await message.reply('❌ Une erreur est survenue pendant l’exécution.');
+        setTimeout(() => errorMsg.delete().catch(() => {}), 5000);
       }
     }
     return;
   }
 
+  // Tickets : commandes textuelles dans salon
   if (!message.channel.name?.startsWith('ticket-')) return;
   const ticketOwner = message.channel.name.replace('ticket-', '');
   const isTicketOwner = ticketOwner === message.author.username.toLowerCase();
@@ -156,24 +101,22 @@ client.on('messageCreate', async message => {
   if (cmd === '+close') {
     const embed = new EmbedBuilder()
       .setTitle('🎟️ Ticket Fermé')
-      .setDescription(`Le ticket **${message.channel.name}** a été fermé par ${message.author}.`)
+      .setDescription(`Le ticket **${message.channel.name}** a été fermé par ${message.author}`)
       .setColor('Red')
       .setTimestamp();
-
-    if (ticketLogChannel) await ticketLogChannel.send({ embeds: [embed] });
-    await message.channel.send('✅ Fermeture du ticket dans 3 secondes...');
-    setTimeout(() => message.channel.delete().catch(() => {}), 3000);
-    return;
+    if (ticketLogChannel) ticketLogChannel.send({ embeds: [embed] });
+    await message.channel.send('✅ Fermeture dans 3 secondes...');
+    return setTimeout(() => message.channel.delete().catch(() => {}), 3000);
   }
 
   if (cmd === '+rename') {
     const newName = args.join('-').toLowerCase().replace(/[^a-z0-9\-]/g, '');
     if (!newName || newName.length < 3) {
-      return message.reply('❌ Donnez un nom valide. Exemple : `+rename livraison-pb`');
+      return message.reply('❌ Nom invalide. Exemple : `+rename livraison-pb`');
     }
 
     await message.channel.setName(`ticket-${newName}`);
-    const confirmation = await message.reply(`✅ Nom du ticket mis à jour en \`ticket-${newName}\``);
+    const confirm = await message.reply(`✅ Nouveau nom : \`ticket-${newName}\``);
 
     const embed = new EmbedBuilder()
       .setTitle('✏️ Ticket renommé')
@@ -181,14 +124,66 @@ client.on('messageCreate', async message => {
       .setColor('Blue')
       .setTimestamp();
 
-    if (ticketLogChannel) await ticketLogChannel.send({ embeds: [embed] });
+    if (ticketLogChannel) ticketLogChannel.send({ embeds: [embed] });
 
     setTimeout(() => {
       message.delete().catch(() => {});
-      confirmation.delete().catch(() => {});
+      confirm.delete().catch(() => {});
     }, 3000);
+  }
+});
 
-    return;
+// 🧾 Logs suppression/modif/départ
+client.on('messageDelete', async message => {
+  if (!message.guild || message.author?.bot) return;
+  const log = new EmbedBuilder()
+    .setTitle('🗑️ Message supprimé')
+    .setDescription(`**Auteur :** ${message.author}\n**Salon :** ${message.channel}\n**Contenu :** ${message.content || 'Aucun contenu'}`)
+    .setColor('Orange')
+    .setTimestamp();
+
+  const channel = message.guild.channels.cache.get(MODERATION_LOG_CHANNEL_ID);
+  if (channel) channel.send({ embeds: [log] });
+});
+
+client.on('messageUpdate', async (oldMsg, newMsg) => {
+  if (!newMsg.guild || newMsg.author?.bot || oldMsg.content === newMsg.content) return;
+  const log = new EmbedBuilder()
+    .setTitle('✏️ Message modifié')
+    .addFields(
+      { name: 'Avant', value: oldMsg.content || 'Vide' },
+      { name: 'Après', value: newMsg.content || 'Vide' }
+    )
+    .setDescription(`**Auteur :** ${newMsg.author}\n**Salon :** ${newMsg.channel}`)
+    .setColor('Yellow')
+    .setTimestamp();
+
+  const channel = newMsg.guild.channels.cache.get(MODERATION_LOG_CHANNEL_ID);
+  if (channel) channel.send({ embeds: [log] });
+});
+
+client.on('guildMemberRemove', async member => {
+  const embed = new EmbedBuilder()
+    .setTitle('📤 Départ membre')
+    .setDescription(`${member.user.tag} a quitté le serveur.`)
+    .setColor('Red')
+    .setTimestamp();
+
+  const channel = member.guild.channels.cache.get(MODERATION_LOG_CHANNEL_ID);
+  if (channel) channel.send({ embeds: [embed] });
+});
+
+// 🧪 Interactions (debug)
+const ticketHandler = require('./utils/ticketHandler');
+const buttonHandler = require('./utils/buttonHandler');
+
+client.on('interactionCreate', i => {
+  if (i.isStringSelectMenu()) {
+    console.log("📥 Menu sélectionné :", i.customId, i.values);
+    ticketHandler(i);
+  } else if (i.isButton()) {
+    console.log("🔘 Bouton cliqué :", i.customId);
+    buttonHandler(i);
   }
 });
 
