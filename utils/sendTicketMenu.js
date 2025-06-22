@@ -18,7 +18,7 @@ module.exports = async (client) => {
   const embed = new EmbedBuilder()
     .setTitle("🎫 NexuShop Ticket System")
     .setDescription("**Sélectionne un type de ticket ci-dessous.**\nTout abus sera sanctionné.")
-    .setColor("Purple")
+    .setColor("White")
     .setImage("https://auto.creavite.co/api/out/DHwodsxyi3Vbsy7gn8_standard.gif");
 
   const select = new StringSelectMenuBuilder()

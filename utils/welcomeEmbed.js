@@ -8,7 +8,7 @@ module.exports = async (member) => {
     const embed = new EmbedBuilder()
       .setTitle('Welcome to NexuShop')
       .setDescription(`Hello ${member}, welcome to **NexuShop**!`)
-      .setColor('#c00000')
+      .setColor('#ffffff')
       .setImage("https://auto.creavite.co/api/out/DHwodsxyi3Vbsy7gn8_standard.gif")
       .setTimestamp();
 

@@ -6,8 +6,7 @@ const {
   GatewayIntentBits,
   Partials,
   Collection,
-  EmbedBuilder,
-  AuditLogEvent
+  EmbedBuilder
 } = require('discord.js');
 
 const fs = require('fs');
@@ -36,14 +35,12 @@ const client = new Client({
 
 client.commands = new Collection();
 
-// 📦 Commandes dans /commands
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
   client.commands.set(command.name, command);
 }
 
-// ✅ Bot prêt
 client.once('ready', () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
   client.user.setPresence({
@@ -55,32 +52,38 @@ client.once('ready', () => {
   sendTicketMenu(client);
 });
 
-// 👋 Nouveau membre
 const welcomeEmbed = require('./utils/welcomeEmbed');
-client.on('guildMemberAdd', member => welcomeEmbed(member));
+client.on('guildMemberAdd', async member => {
+  const accountAge = Date.now() - member.user.createdTimestamp;
+  const ageLimit = 1000 * 60 * 60 * 3; // 3 heures
 
-// 📩 Tickets (menus)
+  if (accountAge < ageLimit) {
+    try {
+      await member.send(`🚫 Votre compte est trop récent pour rejoindre **${member.guild.name}**. Réessayez plus tard.`);
+    } catch {}
+    return await member.kick('Compte trop récent (anti-alt)');
+  }
+
+  welcomeEmbed(member);
+});
+
 const ticketHandler = require('./utils/ticketHandler');
 client.on('interactionCreate', i => {
   if (i.isStringSelectMenu()) ticketHandler(i);
 });
 
-// 🛠 Boutons (claim/close)
 const buttonHandler = require('./utils/buttonHandler');
 client.on('interactionCreate', i => {
   if (i.isButton()) buttonHandler(i);
 });
 
-// 🧾 Logs personnalisés
 client.on('messageDelete', async message => {
   if (!message.guild || message.author?.bot) return;
   const channel = message.guild.channels.cache.get(MODERATION_LOG_CHANNEL_ID);
   if (!channel) return;
   const embed = new EmbedBuilder()
     .setTitle('🗑️ Message supprimé')
-    .setDescription(`**Auteur :** ${message.author}
-**Salon :** ${message.channel}
-**Contenu :** ${message.content || 'Aucun contenu'}`)
+    .setDescription(`**Auteur :** ${message.author}\n**Salon :** ${message.channel}\n**Contenu :** ${message.content || 'Aucun contenu'}`)
     .setColor('Orange')
     .setTimestamp();
   channel.send({ embeds: [embed] });
@@ -93,25 +96,12 @@ client.on('messageUpdate', async (oldMsg, newMsg) => {
   if (!channel) return;
   const embed = new EmbedBuilder()
     .setTitle('✏️ Message modifié')
-    .setDescription(`**Auteur :** ${newMsg.author}
-**Salon :** ${newMsg.channel}`)
+    .setDescription(`**Auteur :** ${newMsg.author}\n**Salon :** ${newMsg.channel}`)
     .addFields(
       { name: 'Avant', value: oldMsg.content || 'Vide' },
       { name: 'Après', value: newMsg.content || 'Vide' }
     )
     .setColor('Yellow')
-    .setTimestamp();
-  channel.send({ embeds: [embed] });
-});
-
-client.on('guildMemberAdd', async member => {
-  const channel = member.guild.channels.cache.get(MODERATION_LOG_CHANNEL_ID);
-  if (!channel) return;
-  const embed = new EmbedBuilder()
-    .setTitle('📥 Nouveau membre')
-    .setDescription(`Bienvenue à ${member.user.tag}`)
-    .setThumbnail(member.user.displayAvatarURL())
-    .setColor('Green')
     .setTimestamp();
   channel.send({ embeds: [embed] });
 });
@@ -127,7 +117,6 @@ client.on('guildMemberRemove', async member => {
   channel.send({ embeds: [embed] });
 });
 
-// 💬 Commandes texte + tickets + anti-pub
 client.on('messageCreate', async message => {
   if (message.author.bot || !message.guild) return;
 
@@ -141,25 +130,25 @@ client.on('messageCreate', async message => {
   const isStaff = message.member.roles.cache.has(STAFF_ROLE_ID);
   const ticketLogChannel = message.guild.channels.cache.get(TICKET_LOG_CHANNEL_ID);
 
-  // 🟣 Commandes classiques avec +
   if (content.startsWith('+')) {
     const commandName = cmd.slice(1);
     const command = client.commands.get(commandName);
     if (command) {
       try {
         await command.execute(message, args);
+        const sent = await message.channel.send(`✅ Commande **+${commandName}** exécutée.`);
+        setTimeout(() => sent.delete().catch(() => {}), 5000);
         await message.delete().catch(() => {});
       } catch (err) {
         console.error(err);
-        message.reply('❌ Une erreur est survenue lors de l’exécution de la commande.');
+        const errMsg = await message.reply('❌ Une erreur est survenue lors de l’exécution de la commande.');
+        setTimeout(() => errMsg.delete().catch(() => {}), 5000);
       }
     }
     return;
   }
 
-  // 🟡 Commandes ticket : +rename / +close
   if (!message.channel.name?.startsWith('ticket-')) return;
-
   const ticketOwner = message.channel.name.replace('ticket-', '');
   const isTicketOwner = ticketOwner === message.author.username.toLowerCase();
   if (!isStaff && !isTicketOwner) return;
