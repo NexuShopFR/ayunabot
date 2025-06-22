@@ -8,6 +8,7 @@ const {
   Collection,
   EmbedBuilder
 } = require('discord.js');
+
 const fs = require('fs');
 const antiAdFilter = require('./utils/antiAdFilter');
 const antiSpamFilter = require('./utils/antiSpamFilter');
@@ -31,7 +32,7 @@ const client = new Client({
   partials: [Partials.Channel, Partials.Message, Partials.Reaction]
 });
 
-// 📂 Commandes préfixées
+// 📂 Chargement des commandes
 client.commands = new Collection();
 const commandFiles = fs.readdirSync('./commands').filter(f => f.endsWith('.js'));
 for (const file of commandFiles) {
@@ -80,67 +81,22 @@ client.on('messageCreate', async message => {
   const args = content.split(/\s+/);
   const cmd = args.shift().toLowerCase();
 
-  const isStaff = message.member.roles.cache.has(STAFF_ROLE_ID);
-  const ticketLogChannel = message.guild.channels.cache.get(TICKET_LOG_CHANNEL_ID);
+  if (!cmd.startsWith('+')) return;
 
-  // 🛠️ Commandes préfixées
-  if (cmd.startsWith('+')) {
-    const commandName = cmd.slice(1);
-    const command = client.commands.get(commandName);
-    if (!command) {
-      console.warn(`❓ Commande inconnue : ${commandName}`);
-      return;
-    }
-
-    try {
-      await command.execute(message, args);
-    } catch (err) {
-      console.error(`❌ Erreur dans la commande ${commandName} :`, err);
-      const errorMsg = await message.reply('❌ Une erreur est survenue pendant l’exécution.');
-      setTimeout(() => errorMsg.delete().catch(() => {}), 5000);
-    }
+  const commandName = cmd.slice(1);
+  const command = client.commands.get(commandName);
+  if (!command) {
+    console.warn(`❓ Commande inconnue : ${commandName}`);
     return;
   }
 
-  // 🎫 Commandes dans les salons de ticket
-  if (!message.channel.name?.startsWith('ticket-')) return;
-  const ticketOwner = message.channel.name.replace('ticket-', '');
-  const isTicketOwner = ticketOwner === message.author.username.toLowerCase();
-  if (!isStaff && !isTicketOwner) return;
-
-  if (cmd === '+close') {
-    const embed = new EmbedBuilder()
-      .setTitle('🎟️ Ticket Fermé')
-      .setDescription(`Le ticket **${message.channel.name}** a été fermé par ${message.author}`)
-      .setColor('Red')
-      .setTimestamp();
-
-    if (ticketLogChannel) ticketLogChannel.send({ embeds: [embed] });
-    await message.channel.send('✅ Fermeture dans 3 secondes...');
-    return setTimeout(() => message.channel.delete().catch(() => {}), 3000);
-  }
-
-  if (cmd === '+rename') {
-    const newName = args.join('-').toLowerCase().replace(/[^a-z0-9\-]/g, '');
-    if (!newName || newName.length < 3) {
-      return message.reply('❌ Nom invalide. Exemple : `+rename livraison-pb`');
-    }
-
-    await message.channel.setName(`ticket-${newName}`);
-    const confirm = await message.reply(`✅ Nouveau nom : \`ticket-${newName}\``);
-
-    const embed = new EmbedBuilder()
-      .setTitle('✏️ Ticket renommé')
-      .setDescription(`Ticket renommé par ${message.author} → \`ticket-${newName}\``)
-      .setColor('Blue')
-      .setTimestamp();
-
-    if (ticketLogChannel) ticketLogChannel.send({ embeds: [embed] });
-
-    setTimeout(() => {
-      message.delete().catch(() => {});
-      confirm.delete().catch(() => {});
-    }, 3000);
+  try {
+    await command.execute(message, args);
+    await message.delete().catch(() => {});
+  } catch (err) {
+    console.error(`❌ Erreur dans la commande ${commandName} :`, err);
+    const errorMsg = await message.reply('❌ Une erreur est survenue pendant l’exécution.');
+    setTimeout(() => errorMsg.delete().catch(() => {}), 5000);
   }
 });
 
@@ -184,7 +140,7 @@ client.on('guildMemberRemove', async member => {
   if (channel) channel.send({ embeds: [embed] });
 });
 
-// 🔘 Menu tickets et boutons
+// 🔘 Menus et boutons tickets
 const ticketHandler = require('./utils/ticketHandler');
 const buttonHandler = require('./utils/buttonHandler');
 
