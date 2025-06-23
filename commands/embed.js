@@ -1,34 +1,33 @@
 const { EmbedBuilder } = require('discord.js');
-require('dotenv').config();
+const { OWNER_ID } = process.env;
 
 module.exports = {
   name: 'embed',
   async execute(message, args) {
-    const OWNER_ID = process.env.OWNER_ID;
+    if (message.author.id !== OWNER_ID) return;
 
-    if (message.author.id !== OWNER_ID) {
-      return message.reply('❌ Cette commande est réservée au propriétaire du bot.');
+    const content = args.join(' ').trim();
+    if (!content && message.attachments.size === 0) {
+      return message.reply('❌ Tu dois fournir un texte ou une image.');
     }
-
-    const content = message.content.slice(7).trim(); // Retire "+embed " du début
-
-    if (!content) {
-      return message.reply('❌ Tu dois fournir un texte pour l\'embed.');
-    }
-
-    // Détection automatique d'un lien d'image (à la fin ou dans le texte)
-    const imageRegex = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))/i;
-    const imageMatch = content.match(imageRegex);
-    const imageUrl = imageMatch ? imageMatch[0] : null;
-
-    const cleanContent = imageUrl ? content.replace(imageRegex, '').trim() : content;
 
     const embed = new EmbedBuilder()
-      .setDescription(cleanContent)
-      .setColor('#ffffff');
+      .setDescription(content || null)
+      .setColor('White');
 
-    if (imageUrl) embed.setImage(imageUrl);
+    // ✅ Si une image est jointe
+    const attachment = message.attachments.first();
+    if (attachment && attachment.contentType?.startsWith('image/')) {
+      embed.setImage(attachment.url);
+    }
 
-    await message.channel.send({ embeds: [embed] });
+    // ✅ Si une URL d’image est incluse dans le message
+    const imageUrlMatch = content?.match(/https?:\/\/\S+\.(png|jpg|jpeg|gif|webp)/i);
+    if (imageUrlMatch) {
+      embed.setImage(imageUrlMatch[0]);
+    }
+
+    await message.delete().catch(() => {});
+    message.channel.send({ embeds: [embed] });
   }
 };

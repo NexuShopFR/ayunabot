@@ -1,21 +1,26 @@
-require('dotenv').config();
+const { OWNER_ID } = process.env;
 
 module.exports = {
   name: 'say',
-  async execute(message) {
-    const OWNER_ID = process.env.OWNER_ID;
+  async execute(message, args) {
+    if (message.author.id !== OWNER_ID) return;
 
-    if (message.author.id !== OWNER_ID) {
-      return message.reply('❌ Cette commande est réservée au propriétaire du bot.');
-    }
+    const content = args.join(' ').trim();
+    const attachment = message.attachments.first();
 
-    const content = message.content.slice(5).trim(); // Retire "+say " du début
-
-    if (!content) {
-      return message.reply('❌ Tu dois fournir un texte.');
+    if (!content && !attachment) {
+      return message.reply('❌ Tu dois fournir un texte ou une image.');
     }
 
     await message.delete().catch(() => {});
-    await message.channel.send({ content });
+
+    if (attachment) {
+      message.channel.send({
+        content,
+        files: [attachment]
+      });
+    } else {
+      message.channel.send(content);
+    }
   }
 };
