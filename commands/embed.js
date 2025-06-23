@@ -20,7 +20,7 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setDescription(cleanText || null)
-      .setColor('#2b2d31'); // Couleur sobre
+      .setColor('#FFFFFF'); // Couleur sobre
 
     if (attachment) embed.setImage(attachment.url);
     else if (imageUrl) embed.setImage(imageUrl);
