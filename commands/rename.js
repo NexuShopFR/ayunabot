@@ -10,7 +10,8 @@ module.exports = {
     const isStaff = message.member.roles.cache.has(STAFF_ROLE_ID);
     const channel = message.channel;
 
-    if (!channel.name.startsWith('ticket-')) return;
+    // Vérifie que le salon est dans une catégorie "ticket"
+    if (!channel.parent || !channel.parent.name.toLowerCase().includes('ticket')) return;
 
     if (!isStaff) return;
 
