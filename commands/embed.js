@@ -1,29 +1,34 @@
 const { EmbedBuilder } = require('discord.js');
-const { OWNER_ID } = process.env;
+require('dotenv').config();
 
 module.exports = {
   name: 'embed',
   async execute(message, args) {
-    // Vérifie que c’est le propriétaire (toi)
+    const OWNER_ID = process.env.OWNER_ID;
+
     if (message.author.id !== OWNER_ID) {
-      return message.reply('❌ Tu n’as pas la permission d’utiliser cette commande.')
-        .then(msg => setTimeout(() => msg.delete().catch(() => {}), 5000));
+      return message.reply('❌ Cette commande est réservée au propriétaire du bot.');
     }
 
-    const sayMessage = args.join(' ');
-    if (!sayMessage) {
-      return message.reply('❌ Merci de fournir un message à envoyer.')
-        .then(msg => setTimeout(() => msg.delete().catch(() => {}), 5000));
+    const content = message.content.slice(7).trim(); // Retire "+embed " du début
+
+    if (!content) {
+      return message.reply('❌ Tu dois fournir un texte pour l\'embed.');
     }
 
-    // Supprime ton message
-    await message.delete().catch(() => {});
+    // Détection automatique d'un lien d'image (à la fin ou dans le texte)
+    const imageRegex = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))/i;
+    const imageMatch = content.match(imageRegex);
+    const imageUrl = imageMatch ? imageMatch[0] : null;
 
-    // Envoie le message (en embed blanc, si tu préfères en brut je peux adapter)
+    const cleanContent = imageUrl ? content.replace(imageRegex, '').trim() : content;
+
     const embed = new EmbedBuilder()
-      .setDescription(sayMessage)
+      .setDescription(cleanContent)
       .setColor('#ffffff');
 
-    message.channel.send({ embeds: [embed] });
+    if (imageUrl) embed.setImage(imageUrl);
+
+    await message.channel.send({ embeds: [embed] });
   }
 };
