@@ -25,8 +25,8 @@ module.exports = {
     const embed = new EmbedBuilder()
       .setTitle('📢 Warn Notification')
       .setDescription(`Vous avez été **warn** sur **${message.guild.name}**.\n\nRaison : ${reason}`)
-      .setImage('https://auto.creavite.co/api/out/Yojdi6y2Kbbnsy9trz_standard.gif')
-      .setFooter({ text: 'Support: discord.gg/nexushop' })
+      .setImage('https://i.imgur.com/iaLkMmW.gif')
+      .setFooter({ text: 'Support: discord.gg/ayunashop' })
       .setColor('#ffffff');
 
     try { await target.user.send({ embeds: [embed] }); } catch {}

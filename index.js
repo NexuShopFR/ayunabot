@@ -48,7 +48,7 @@ for (const file of commandFiles) {
 client.once('ready', () => {
   console.log(`🟢 Connecté en tant que ${client.user.tag}`);
   client.user.setPresence({
-    activities: [{ name: 'NexuShop', type: 3 }],
+    activities: [{ name: 'Ayuna', type: 3 }],
     status: 'dnd'
   });
 

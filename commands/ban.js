@@ -16,8 +16,8 @@ module.exports = {
       .setDescription(`${target} a été banni par ${message.author}
 Raison: ${reason}`)
       .setColor('#ffffff')
-      .setImage('https://auto.creavite.co/api/out/Yojdi6y2Kbbnsy9trz_standard.gif')
-      .setFooter({ text: 'discord.gg/nexushop' });
+      .setImage('https://i.imgur.com/iaLkMmW.gif')
+      .setFooter({ text: 'discord.gg/ayunashop' });
 
     await target.send({ embeds: [embed] }).catch(() => {});
     await target.ban({ reason });

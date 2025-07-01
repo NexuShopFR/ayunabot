@@ -9,7 +9,6 @@ const {
 } = require('discord.js');
 
 const {
-  STAFF_ROLE_ID,
   TICKET_LOG_CHANNEL_ID
 } = process.env;
 
@@ -29,8 +28,8 @@ module.exports = async (interaction) => {
     partner: 'Ticket Partner',
     buy: 'Ticket Buy',
     support: 'Ticket Support',
-    owner: 'Ticket Owner',
-    reward: 'Reward Invites'
+    owner: 'Ticket Buy Owner',
+    seller: 'Ticket Buy Seller'
   };
 
   let category = interaction.guild.channels.cache.find(
@@ -58,18 +57,10 @@ module.exports = async (interaction) => {
       ]
     },
     {
-      id: STAFF_ROLE_ID,
+      id: interaction.guild.ownerId,
       allow: [PermissionsBitField.Flags.ViewChannel]
     }
   ];
-
-  if (choice === 'owner') {
-    permissionOverwrites.splice(2, 1);
-    permissionOverwrites.push({
-      id: interaction.guild.ownerId,
-      allow: [PermissionsBitField.Flags.ViewChannel]
-    });
-  }
 
   const channel = await interaction.guild.channels.create({
     name: username,
@@ -80,7 +71,7 @@ module.exports = async (interaction) => {
 
   const embed = new EmbedBuilder()
     .setTitle("📨 Ticket Ouvert")
-    .setDescription(`Bonjour ${interaction.user}, un membre de l’équipe vous répondra bientôt.`)
+    .setDescription(`Bonjour ${interaction.user}, le propriétaire vous répondra bientôt.`)
     .setColor("Green");
 
   const buttons = new ActionRowBuilder().addComponents(
@@ -95,7 +86,7 @@ module.exports = async (interaction) => {
   );
 
   await channel.send({
-    content: `<@&${STAFF_ROLE_ID}>`,
+    content: `<@${interaction.guild.ownerId}>`,
     embeds: [embed],
     components: [buttons]
   });

@@ -17,21 +17,21 @@ module.exports = async (client) => {
   if (alreadySent) return;
 
   const embed = new EmbedBuilder()
-    .setTitle("🎫 NexuShop Ticket System")
+    .setTitle("🎫 Ayuna Ticket System")
     .setDescription("**Sélectionne un type de ticket ci-dessous.**\nTout abus sera sanctionné.")
     .setColor("White")
-    .setImage("https://auto.creavite.co/api/out/Yojdi6y2Kbbnsy9trz_standard.gif");
+    .setImage("https://i.imgur.com/iaLkMmW.gif");
 
   const select = new StringSelectMenuBuilder()
     .setCustomId('ticket-select')
     .setPlaceholder('📩 Choisis un type de ticket')
     .addOptions([
-      { label: '👑 Owner', value: 'owner', description: 'Contacter le propriétaire du serveur' },
+      { label: '👑 Buy Owner', value: 'owner', description: 'Contacter le propriétaire pour un achat' },
+      { label: '💼 Buy Seller', value: 'seller', description: 'Contacter un vendeur du shop' },
       { label: '🤝 Partnership', value: 'partner', description: 'Demander un partenariat' },
       { label: '💳 Buy', value: 'buy', description: 'Faire un achat' },
       { label: '🛠️ Support', value: 'support', description: 'Demander de l’aide' },
-      { label: '🎁 Reward Invites', value: 'reward', description: 'Réclamer une récompense d’invitations' },
-      { label: '❌ Annuler', value: 'cancel', description: 'Annuler la création de ticket' },
+      { label: '❌ Annuler', value: 'cancel', description: 'Annuler la création de ticket' }
     ]);
 
   const row = new ActionRowBuilder().addComponents(select);

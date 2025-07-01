@@ -15,8 +15,8 @@ module.exports = {
     const embed = new EmbedBuilder()
       .setTitle('🔊 Unmute Notification')
       .setDescription(`Vous avez été **unmute** du serveur **${message.guild.name}**.`)
-      .setImage('https://auto.creavite.co/api/out/DHwodsxyi3Vbsy7gn8_standard.gif')
-      .setFooter({ text: 'Support: discord.gg/nexushop' })
+      .setImage('https://i.imgur.com/iaLkMmW.gif')
+      .setFooter({ text: 'Support: discord.gg/ayunashop' })
       .setColor('#ffffff');
 
     try {

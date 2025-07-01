@@ -6,10 +6,10 @@ module.exports = async (member) => {
   const channel = member.guild.channels.cache.get(process.env.WELCOME_CHANNEL_ID);
   if (channel) {
     const embed = new EmbedBuilder()
-      .setTitle('Welcome to NexuShop')
-      .setDescription(`Hello ${member}, welcome to **NexuShop**!`)
+      .setTitle('Welcome to Ayuna')
+      .setDescription(`Hello ${member}, welcome to **Ayuna**!`)
       .setColor('#ffffff')
-      .setImage("https://auto.creavite.co/api/out/Yojdi6y2Kbbnsy9trz_standard.gif")
+      .setImage("https://i.imgur.com/iaLkMmW.gif")
       .setTimestamp();
 
     channel.send({ embeds: [embed] });
@@ -20,8 +20,8 @@ module.exports = async (member) => {
     await member.send({
       embeds: [
         new EmbedBuilder()
-          .setTitle("👋 Welcome to NexuShop!")
-          .setDescription("Thanks for joining **NexuShop**.\n\nIf you need help, feel free to open a ticket in the server.\nEnjoy your stay!")
+          .setTitle("👋 Welcome to Ayuna!")
+          .setDescription("Thanks for joining **Ayuna**.\n\nIf you need help, feel free to open a ticket in the server.\nEnjoy your stay!")
           .setColor("Green")
           .setTimestamp()
       ]
