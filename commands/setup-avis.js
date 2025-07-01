@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { EmbedBuilder } = require('discord.js');
 const sendAvisMenu = require('../utils/sendAvisMenu');
 
