@@ -26,7 +26,6 @@ module.exports = async (interaction) => {
 
   const categoryMap = {
     partner: 'Ticket Partner',
-    buy: 'Ticket Buy',
     support: 'Ticket Support',
     owner: 'Ticket Buy Owner',
     seller: 'Ticket Buy Seller'

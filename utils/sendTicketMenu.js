@@ -29,7 +29,6 @@ module.exports = async (client) => {
       { label: '👑 Buy Owner', value: 'owner', description: 'Contacter le propriétaire pour un achat' },
       { label: '💼 Buy Seller', value: 'seller', description: 'Contacter un vendeur du shop' },
       { label: '🤝 Partnership', value: 'partner', description: 'Demander un partenariat' },
-      { label: '💳 Buy', value: 'buy', description: 'Faire un achat' },
       { label: '🛠️ Support', value: 'support', description: 'Demander de l’aide' },
       { label: '❌ Annuler', value: 'cancel', description: 'Annuler la création de ticket' }
     ]);
