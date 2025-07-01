@@ -7,12 +7,10 @@ module.exports = {
     const OWNER_ID = process.env.OWNER_ID;
     const TICKET_LOG_CHANNEL_ID = process.env.TICKET_LOG_CHANNEL_ID;
 
-    const isOwner = message.member.roles.cache.has(OWNER_ID);
+    const isOwner = message.author.id === OWNER_ID;
     const channel = message.channel;
 
-    // Vérifie que le salon est dans une catégorie "ticket"
     if (!channel.parent || !channel.parent.name.toLowerCase().includes('ticket')) return;
-
     if (!isOwner) return;
 
     const newName = args.join('-').toLowerCase().replace(/[^a-z0-9\-]/g, '');

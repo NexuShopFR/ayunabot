@@ -15,8 +15,8 @@ module.exports = {
     }
 
     await message.channel.bulkDelete(count, true);
-    await message.channel.send(`🧹 ${count} messages supprimés.`)
-      .then(m => setTimeout(() => m.delete().catch(() => {}), 5000));
+    const confirmMsg = await message.channel.send(`🧹 ${count} messages supprimés.`);
+    setTimeout(() => confirmMsg.delete().catch(() => {}), 5000);
 
     const embed = new EmbedBuilder()
       .setTitle('🧹 CLEAR Effectué')
@@ -24,7 +24,7 @@ module.exports = {
       .setColor('Orange');
 
     const logChannel = message.guild.channels.cache.get(MODERATION_LOG_CHANNEL_ID);
-    if (logChannel) await logChannel.send({ embeds: [embed] });
+    if (logChannel) logChannel.send({ embeds: [embed] });
 
     await message.delete().catch(() => {});
   }

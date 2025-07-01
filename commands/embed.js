@@ -9,9 +9,7 @@ module.exports = {
     const content = message.content.slice('+embed'.length).trim();
     const attachment = message.attachments.first();
 
-    if (!content && !attachment) {
-      return message.reply('❌ Tu dois fournir un message ou une image.');
-    }
+    if (!content && !attachment) return message.reply('❌ Tu dois fournir un message ou une image.');
 
     await message.delete().catch(() => {});
 
@@ -20,7 +18,7 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setDescription(cleanText || null)
-      .setColor('#FFFFFF'); // Couleur sobre
+      .setColor('#FFFFFF');
 
     if (attachment) embed.setImage(attachment.url);
     else if (imageUrl) embed.setImage(imageUrl);

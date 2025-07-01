@@ -1,18 +1,14 @@
 const { EmbedBuilder } = require('discord.js');
+require('dotenv').config();
 
 module.exports = {
   name: 'invite',
   async execute(message, args) {
-    const OWNER = process.env.OWNER_ID;
-    const isOwner = message.member.roles.cache.has(OWNER);
-    if (!isOwner) {
-      return message.reply('❌ Commande réservée au owner.');
-    }
+    const isOwner = message.author.id === process.env.OWNER_ID;
+    if (!isOwner) return message.reply('❌ Commande réservée au Owner.');
 
     const member = message.mentions.members.first() || message.guild.members.cache.get(args[0]);
-    if (!member) {
-      return message.reply('❌ Mentionne un utilisateur ou donne son ID. Exemple : `+invite @user`');
-    }
+    if (!member) return message.reply('❌ Mentionne un utilisateur ou donne son ID.');
 
     try {
       const invites = await message.guild.invites.fetch();
@@ -33,7 +29,7 @@ module.exports = {
       await message.reply({ embeds: [embed] });
     } catch (err) {
       console.error(err);
-      message.reply('❌ Une erreur est survenue lors de la récupération des données.');
+      message.reply('❌ Erreur lors de la récupération des données.');
     }
   }
 };

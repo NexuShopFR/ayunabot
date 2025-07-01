@@ -16,7 +16,6 @@ const antiSpamFilter = require('./utils/antiSpamFilter');
 const {
   BOT_TOKEN,
   OWNER_ID,
-  TICKET_LOG_CHANNEL_ID,
   MODERATION_LOG_CHANNEL_ID
 } = process.env;
 
@@ -32,7 +31,7 @@ const client = new Client({
   partials: [Partials.Channel, Partials.Message, Partials.Reaction]
 });
 
-// 📂 Chargement des commandes
+// 📂 Commandes
 client.commands = new Collection();
 const commandFiles = fs.readdirSync('./commands').filter(f => f.endsWith('.js'));
 for (const file of commandFiles) {
@@ -52,11 +51,14 @@ client.once('ready', () => {
     status: 'dnd'
   });
 
+  // 🎫 Panels
   const sendTicketMenu = require('./utils/sendTicketMenu');
-  sendTicketMenu(client);
+  const sendAvisMenu = require('./utils/sendAvisMenu');
+  sendTicketMenu(client); // Panel tickets normal
+  sendAvisMenu(client);   // Panel ticket avis
 });
 
-// 🎉 Bienvenue + anti-alt
+// 🎉 Anti-alt + bienvenue
 const welcomeEmbed = require('./utils/welcomeEmbed');
 client.on('guildMemberAdd', async member => {
   const ageLimit = 1000 * 60 * 60 * 3;
@@ -66,7 +68,6 @@ client.on('guildMemberAdd', async member => {
     } catch {}
     return await member.kick('Compte trop récent (anti-alt)');
   }
-
   welcomeEmbed(member);
 });
 
@@ -85,14 +86,10 @@ client.on('messageCreate', async message => {
 
   const commandName = cmd.slice(1);
   const command = client.commands.get(commandName);
-  if (!command) {
-    console.warn(`❓ Commande inconnue : ${commandName}`);
-    return;
-  }
+  if (!command) return;
 
   try {
     await command.execute(message, args);
-    await message.delete().catch(() => {});
   } catch (err) {
     console.error(`❌ Erreur dans la commande ${commandName} :`, err);
     const errorMsg = await message.reply('❌ Une erreur est survenue pendant l’exécution.');
@@ -100,7 +97,7 @@ client.on('messageCreate', async message => {
   }
 });
 
-// 🧾 Logs suppression/modif/départ
+// 🧾 Logs message/delete/update/memberLeave
 client.on('messageDelete', async message => {
   if (!message.guild || message.author?.bot) return;
   const log = new EmbedBuilder()
@@ -140,17 +137,15 @@ client.on('guildMemberRemove', async member => {
   if (channel) channel.send({ embeds: [embed] });
 });
 
-// 🔘 Menus et boutons tickets
+// 🔘 Menus & Boutons
 const ticketHandler = require('./utils/ticketHandler');
 const buttonHandler = require('./utils/buttonHandler');
 
-client.on('interactionCreate', i => {
-  if (i.isStringSelectMenu()) {
-    console.log("📥 Menu sélectionné :", i.customId, i.values);
-    ticketHandler(i);
-  } else if (i.isButton()) {
-    console.log("🔘 Bouton cliqué :", i.customId);
-    buttonHandler(i);
+client.on('interactionCreate', interaction => {
+  if (interaction.isStringSelectMenu()) {
+    ticketHandler(interaction);
+  } else if (interaction.isButton()) {
+    buttonHandler(interaction);
   }
 });
 
