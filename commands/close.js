@@ -5,14 +5,14 @@ module.exports = {
   name: 'close',
   async execute(message) {
     const channel = message.channel;
-    const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID;
+    const OWNER_ID = process.env.OWNER_ID;
     const TICKET_LOG_CHANNEL_ID = process.env.TICKET_LOG_CHANNEL_ID;
 
     // Vérifie que le salon est dans une catégorie "ticket"
     if (!channel.parent || !channel.parent.name.toLowerCase().includes('ticket')) return;
 
-    const isStaff = message.member.roles.cache.has(STAFF_ROLE_ID);
-    if (!isStaff) return;
+    const isOwner = message.member.roles.cache.has(OWNER_ID);
+    if (!isOwner) return;
 
     const embed = new EmbedBuilder()
       .setTitle('🎟️ Ticket Fermé')

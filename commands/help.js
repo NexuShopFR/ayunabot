@@ -20,7 +20,7 @@ module.exports = {
 \`+unmute @user\` - Enlever le mute
 \`+clear <nombre>\` - Supprimer des messages
 
-**👑 Owner uniquement**
+**👑 Bot**
 \`+embed <texte>\` - Envoyer un embed personnalisé
 \`+say <texte>\` - Faire parler le bot
 \`+setup-ticket\` - Configuration du système de tickets

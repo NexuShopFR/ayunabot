@@ -4,16 +4,16 @@ require('dotenv').config();
 module.exports = {
   name: 'rename',
   async execute(message, args) {
-    const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID;
+    const OWNER_ID = process.env.OWNER_ID;
     const TICKET_LOG_CHANNEL_ID = process.env.TICKET_LOG_CHANNEL_ID;
 
-    const isStaff = message.member.roles.cache.has(STAFF_ROLE_ID);
+    const isOwner = message.member.roles.cache.has(OWNER_ID);
     const channel = message.channel;
 
     // Vérifie que le salon est dans une catégorie "ticket"
     if (!channel.parent || !channel.parent.name.toLowerCase().includes('ticket')) return;
 
-    if (!isStaff) return;
+    if (!isOwner) return;
 
     const newName = args.join('-').toLowerCase().replace(/[^a-z0-9\-]/g, '');
     if (!newName || newName.length < 3) {

@@ -1,13 +1,13 @@
 require('dotenv').config();
 const { EmbedBuilder } = require('discord.js');
 
-const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID;
+const OWNER_ID = process.env.OWNER_ID;
 const MODERATION_LOG_CHANNEL_ID = process.env.MODERATION_LOG_CHANNEL_ID;
 
 module.exports = {
   name: 'clear',
   async execute(message, args) {
-    if (!message.member.roles.cache.has(STAFF_ROLE_ID)) return message.reply('❌ Commande réservée au staff.');
+    if (!message.member.roles.cache.has(OWNER_ID)) return message.reply('❌ Commande réservée au owner.');
 
     const count = parseInt(args[0], 10);
     if (!count || count < 1 || count > 100) {

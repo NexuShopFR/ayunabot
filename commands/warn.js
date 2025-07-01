@@ -3,7 +3,7 @@ const { EmbedBuilder } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
-const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID;
+const OWNER_ID = process.env.OWNER_ID;
 const MODERATION_LOG_CHANNEL_ID = process.env.MODERATION_LOG_CHANNEL_ID;
 const warnsPath = path.join(__dirname, '..', 'data', 'warns.json');
 
@@ -12,9 +12,9 @@ module.exports = {
   async execute(message, args) {
     const target = message.mentions.members.first();
     const reason = args.slice(1).join(' ') || 'Aucune raison fournie';
-    if (!message.member.roles.cache.has(STAFF_ROLE_ID)) return message.reply('❌ Commande réservée au staff.');
+    if (!message.member.roles.cache.has(OWNER_ID)) return message.reply('❌ Commande réservée au Owner.');
     if (!target) return message.reply('❌ Utilisateur non mentionné.');
-    if (target.roles.cache.has(STAFF_ROLE_ID)) return message.reply('❌ Impossible d’avertir un autre staff.');
+    if (target.roles.cache.has(OWNER_ID)) return message.reply('❌ Impossible d’avertir un autre owner.');
 
     const warns = fs.existsSync(warnsPath) ? JSON.parse(fs.readFileSync(warnsPath)) : {};
     const entry = { reason, mod: message.author.tag, date: new Date().toISOString() };

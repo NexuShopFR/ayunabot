@@ -3,10 +3,10 @@ const { EmbedBuilder } = require('discord.js');
 module.exports = {
   name: 'invite',
   async execute(message, args) {
-    const STAFF = process.env.STAFF_ROLE_ID;
-    const isStaff = message.member.roles.cache.has(STAFF);
-    if (!isStaff) {
-      return message.reply('❌ Commande réservée au staff.');
+    const OWNER = process.env.OWNER_ID;
+    const isOwner = message.member.roles.cache.has(OWNER);
+    if (!isOwner) {
+      return message.reply('❌ Commande réservée au owner.');
     }
 
     const member = message.mentions.members.first() || message.guild.members.cache.get(args[0]);

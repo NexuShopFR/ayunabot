@@ -1,16 +1,16 @@
 require('dotenv').config();
 const { EmbedBuilder } = require('discord.js');
 
-const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID;
+const OWNER_ID = process.env.OWNER_ID;
 const MODERATION_LOG_CHANNEL_ID = process.env.MODERATION_LOG_CHANNEL_ID;
 
 module.exports = {
   name: 'unmute',
   async execute(message) {
     const target = message.mentions.members.first();
-    if (!message.member.roles.cache.has(STAFF_ROLE_ID)) return message.reply('❌ Commande réservée au staff.');
+    if (!message.member.roles.cache.has(OWNER_ID)) return message.reply('❌ Commande réservée au Owner.');
     if (!target) return message.reply('❌ Utilisateur non mentionné.');
-    if (target.roles.cache.has(STAFF_ROLE_ID)) return message.reply('❌ Impossible d’agir sur un autre staff.');
+    if (target.roles.cache.has(OWNER_ID)) return message.reply('❌ Impossible d’agir sur un autre owner.');
 
     const embed = new EmbedBuilder()
       .setTitle('🔊 Unmute Notification')
