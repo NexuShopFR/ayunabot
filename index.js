@@ -15,7 +15,7 @@ const antiSpamFilter = require('./utils/antiSpamFilter');
 
 const {
   BOT_TOKEN,
-  STAFF_ROLE_ID,
+  OWNER_ID,
   TICKET_LOG_CHANNEL_ID,
   MODERATION_LOG_CHANNEL_ID
 } = process.env;
