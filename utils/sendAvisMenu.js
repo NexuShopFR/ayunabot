@@ -22,9 +22,12 @@ module.exports = async (client) => {
 
   const embed = new EmbedBuilder()
     .setTitle('💬 Ouvre un ticket Avis')
-    .setDescription(`Tu souhaites laisser un avis sur ton expérience ?\n
-Clique sur le bouton **Avis** pour ouvrir un ticket.\n\n
-🪙 Chaque avis validé est rémunéré **0,50€**.\nMerci de rester respectueux.`)
+    .setDescription(`Tu souhaites laisser un avis sur ton expérience ?
+
+Clique sur le bouton **Avis** pour ouvrir un ticket.
+
+🪙 Chaque avis validé est rémunéré **0,50€**.
+Merci de rester respectueux.`)
     .setImage('https://i.imgur.com/iaLkMmW.gif')
     .setColor('#ffffff');
 

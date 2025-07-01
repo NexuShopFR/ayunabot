@@ -10,7 +10,9 @@ module.exports = {
     const isOwner = message.author.id === OWNER_ID;
     const channel = message.channel;
 
-    if (!channel.parent || !channel.parent.name.toLowerCase().includes('ticket')) return;
+    const parentName = channel.parent?.name.toLowerCase() || '';
+    const isTicket = parentName.includes('ticket');
+    if (!isTicket) return;
     if (!isOwner) return;
 
     const newName = args.join('-').toLowerCase().replace(/[^a-z0-9\-]/g, '');

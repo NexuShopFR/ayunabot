@@ -8,9 +8,7 @@ const {
   ButtonStyle
 } = require('discord.js');
 
-const {
-  TICKET_LOG_CHANNEL_ID
-} = process.env;
+const { TICKET_LOG_CHANNEL_ID } = process.env;
 
 module.exports = async (interaction) => {
   const choice = interaction.values[0];
@@ -28,7 +26,8 @@ module.exports = async (interaction) => {
     partner: 'Ticket Partner',
     support: 'Ticket Support',
     owner: 'Ticket Buy Owner',
-    seller: 'Ticket Buy Seller'
+    seller: 'Ticket Buy Seller',
+    avis: 'Ticket Avis'
   };
 
   let category = interaction.guild.channels.cache.find(
@@ -69,9 +68,9 @@ module.exports = async (interaction) => {
   });
 
   const embed = new EmbedBuilder()
-    .setTitle("📨 Ticket Ouvert")
+    .setTitle('📨 Ticket Ouvert')
     .setDescription(`Bonjour ${interaction.user}, le propriétaire vous répondra bientôt.`)
-    .setColor("Green");
+    .setColor('Green');
 
   const buttons = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
@@ -95,9 +94,9 @@ module.exports = async (interaction) => {
   const logChannel = interaction.guild.channels.cache.get(TICKET_LOG_CHANNEL_ID);
   if (logChannel) {
     const logEmbed = new EmbedBuilder()
-      .setTitle("🧾 Nouveau Ticket")
+      .setTitle('🧾 Nouveau Ticket')
       .setDescription(`**Salon** : ${channel}\n**Utilisateur** : ${interaction.user.tag}\n**Type** : ${choice}`)
-      .setColor("Blue")
+      .setColor('Blue')
       .setTimestamp();
 
     await logChannel.send({ embeds: [logEmbed] });
