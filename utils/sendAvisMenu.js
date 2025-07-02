@@ -1,5 +1,5 @@
+require('dotenv').config();
 const {
-  ChannelType,
   EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
@@ -34,11 +34,11 @@ Merci de rester respectueux.`)
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('avis')
-      .setLabel('Avis')
+      .setLabel('🎫 Avis')
       .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
       .setCustomId('cancel')
-      .setLabel('Annulé')
+      .setLabel('❌ Annulé')
       .setStyle(ButtonStyle.Danger)
   );
 
