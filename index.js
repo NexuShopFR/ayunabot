@@ -1,5 +1,7 @@
 require('dotenv').config();
 require('./keepAlive');
+console.log('[ENV] GUILD_ID:', process.env.GUILD_ID);
+console.log('[ENV] AVIS_PANEL_CHANNEL_ID:', process.env.AVIS_PANEL_CHANNEL_ID);
 
 const {
   Client,
