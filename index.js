@@ -1,3 +1,7 @@
+require('fs').readFileSync('.env', 'utf8').split('\n').forEach(line => {
+  if (line.includes('AVIS_PANEL_CHANNEL_ID')) console.log('[DEBUG ENV LINE]', line);
+});
+require('dotenv').config();
 require('dotenv').config();
 require('./keepAlive');
 console.log('[ENV] GUILD_ID:', process.env.GUILD_ID);
