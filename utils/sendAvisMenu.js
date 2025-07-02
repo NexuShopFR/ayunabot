@@ -2,8 +2,7 @@ require('dotenv').config();
 const {
   EmbedBuilder,
   ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle
+  StringSelectMenuBuilder
 } = require('discord.js');
 
 module.exports = async (client) => {
@@ -28,22 +27,18 @@ Clique sur le bouton **Avis** pour ouvrir un ticket.
 
 🪙 Chaque avis validé est rémunéré **0,50€**.
 Merci de rester respectueux.`)
-    .setImage('https://i.imgur.com/iaLkMmW.gif')
-    .setColor('#ffffff');
+    .setColor("White")
+    .setImage('https://i.imgur.com/iaLkMmW.gif');
 
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId('avis')
-      .setLabel('🎫 Avis')
-      .setStyle(ButtonStyle.Success),
-    new ButtonBuilder()
-      .setCustomId('cancel')
-      .setLabel('❌ Annulé')
-      .setStyle(ButtonStyle.Danger)
-  );
+  const select = new StringSelectMenuBuilder()
+    .setCustomId('ticket-select')
+    .setPlaceholder('📩 Choisis un type de ticket')
+    .addOptions([
+      { label: '🪙 Avis', value: 'avis', description: 'Créer ton ticket pour faire des avis' },
+      { label: '❌ Annuler', value: 'cancel', description: 'Annuler la création de ticket' }
+    ]);
 
-  await avisChannel.bulkDelete(10).catch(() => {});
+  const row = new ActionRowBuilder().addComponents(select);
+
   await avisChannel.send({ embeds: [embed], components: [row] });
-
-  console.log('📩 Panel ticket Avis envoyé avec succès');
 };
